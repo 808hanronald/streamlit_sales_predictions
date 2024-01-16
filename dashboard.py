@@ -66,3 +66,36 @@ null_values = na_buffer.getvalue()
 # Use Streamlit to display the info
 if st.button('Show Null Values as String'):
     st.text(null_values)
+
+
+
+import plotly.express as px
+import plotly.io as pio
+pio.templates.default = 'plotly_dark'
+column_to_use = ['Item_Weight', 'Item_Fat_Content', 'Item_Visibility', 'Item_Type', 'Item_MSRP', "Outlet_Size", 'Outlet_Location_Type', 'Outlet_Type', 'Item_Outlet_Sales']
+
+# Use plotly for explore functions
+def plotly_explore_numeric(df,x):
+    fig = px.histogram(df,x=x,marginal='box',title='Distribution of {x}',width=1000,height=500)
+    return fig
+
+def plotly_explore_categorical(df,x):
+    fig=px.histogram(df,x=x,color=x,title='Distribution of {x}',width=1000,height=500)
+    fig.update_layout(showlegend=False)
+    return fig
+
+st.markdown('#### Displaying approprate Plotly plot based on selected column')
+
+column = st.selectbox(label="Select a column", options=column_to_use)
+
+# Conditional statement to determin which function to use
+if df[column].dtype == 'object':
+    fig=plotly_explore_categorical(df,column)
+else:
+    fig=plotly_explore_numeric(df,column)
+
+# Display appropriate eda plots
+st.plotly_chart(fig)
+
+
+
