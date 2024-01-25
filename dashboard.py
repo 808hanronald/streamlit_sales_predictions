@@ -36,12 +36,6 @@ if st.button('Show Discriptive Statistics'):
 # Display Summary Stats
 st.markdown("#### Summary Info")
 
-# Use streamlit to display the info
-if st.button('Show Summary Info'):
-    st.text(summary_info)
-
-# Display an interactive Null Values
-st.markdown("#### Null Values as DataFrame and String")
 # Display Info()
 # In order to display output on our app. we first need to capture it.
 # We can use an IO buffer to capture the output.  Then we will use the .getvalue() arugment to retrive it
@@ -51,6 +45,14 @@ buffer = StringIO()
 df.info(buf=buffer)
 # Retrieve the content from the buffer
 summary_info = buffer.getvalue()
+
+
+# Use streamlit to display the info
+if st.button('Show Summary Info'):
+    st.text(summary_info)
+
+# Display an interactive Null Values
+st.markdown("#### Null Values as DataFrame and String")
 
 # Null valuse two ways 
 if st.button('Show Null Values as DataFrame'):
@@ -96,6 +98,56 @@ else:
 
 # Display appropriate eda plots
 st.plotly_chart(fig)
+
+st.markdown("#### Explore Features vs. Sale Price with Plotly")
+# Add a selectbox for all possible features 
+# Copy list of columns
+feature_to_use = column_to_use[:]
+# Define target
+target = 'Item_Outlet_Sales'
+# Remove target from list of features
+feature_to_use.remove(target)
+
+# Add a selectbox for all possible columns
+feature = st.selectbox(label='Select a feature to compare with Item Outlet Sales', options=feature_to_use)
+
+
+# functionizing numeric vs target
+def plotly_numeric_vs_target(df, x, y='Item_Outlet_Sales', trendline='ols',add_hoverdata=True):
+    if add_hoverdata == True:
+        hover_data = list(df.columns)
+    else: 
+        hover_data = None
+        
+    pfig = px.scatter(df, x=x, y=y,width=800, height=600,
+                     hover_data=hover_data,
+                      trendline=trendline,
+                      trendline_color_override='red',
+                     title=f"{x} vs. {y}")
+    
+    pfig.update_traces(marker=dict(size=3),
+                      line=dict(dash='dash'))
+    return pfig
+
+def plotly_catagorical_vs_target(df,x,y="Item_Outlet_Sales",histfunc='avg',
+                                 width=800,height=500):
+
+    fig = px.histogram(df,x=x,y=y,color=x,width=width,height=height,histfunc=histfunc,
+                      title=f'Compare {histfunc.title()} {y} by {x}')
+    fig.update_layout(showlegend=False)
+    return fig
+
+# Conditional statement to determin which function to use
+if df[feature].dtype =='object':
+    fig_vs = plotly_catagorical_vs_target(df,x=feature)
+else:
+    fig_vs = plotly_numeric_vs_target(df,x = feature)
+
+st.plotly_chart(fig_vs)
+
+
+
+
 
 
 
